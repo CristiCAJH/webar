@@ -6,7 +6,7 @@ console.log("THREE", THREE);
 
 document.addEventListener("DOMContentLoaded", ()=> {
 	const initialize = async() => {
-		const arButton = document.querySelector("ar-button");
+		const arButton = document.querySelector("#ar-button");
 
 		const supported = navigator.xr && await navigator.xr.isSessionSupported("immersive-ar")
 		if(!supported){
