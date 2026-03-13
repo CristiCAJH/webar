@@ -1,43 +1,66 @@
-
 console.log("preinit");
-import * as THREE from "./libs/three.js-r132/build/three.module.js";
+import * as THREE from "../libs/three.js-r132/build/three.module.js";
 
 console.log("THREE", THREE);
 
 
 document.addEventListener("DOMContentLoaded", ()=> {
-	const scene= new THREE.Scene();
+	const initialize = async() => {
+		const arButton = document.querySelector("ar-button");
 
-	const geometry = new THREE.BoxGeometry(1,1,1);
-	const material = new THREE.MeshBasicMaterial({color: "#444444"});
-	const cube = new THREE.Mesh(geometry,material);
+		const supported = navigator.xr && await navigator.xr.isSessionSupported("immersive-ar")''
+		if(!supported){
+			arButton.textContent = "not supported";
+			arButton.disable = true;
+			return;
+		}
 
-	scene.add(cube);
+		const scene =  new THREE.Scene();
+		const camera = new THREE.PerspectiveCamera();
+		const renderer = new THREE.WebGLRenderer({alpha: true});
 
-	cube.position.set(0,0,-2);
-	cube.rotation.set(0, Math.PI/4, 0);
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setPixelRatio(window.devicePixelRatio);
+		document.body.appendChild(renderer.domElement);
 
-	const camera = new THREE.PerspectiveCamera();
-	camera.position.set(1,1,5);
+		const geometry = new THREE.BoxGeometry(0.06, 0.06, 0.06);
+		const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+		const mesh =  new THREE.Mesh(geometry, material);
+		mesh.position.set(0,0,-.03);
+		scene.add(mesh);
 
-	const renderer = new THREE.WebGLRenderer({alpha:true});
-	renderer.setSize(500,500);
-	renderer.render(scene,camera);
+		const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+		scene.add(light);
 
-	const video = document.createElement("video");
-	navigator.mediaDevices.getUserMedia({video: true}).then((stream)=>{
-		video.srcObject = stream;
-		video.play();
-	});
+		let currentSession = null;
+		const start = async() =>{
+			let currentSession = await navigator.xr.requestSession("immersive-ar", {optionalFeatures: ['dom-overlay'], domOverlay:{root: document.body}});
 
 
-	video.style.position = "absolute";
-	video.style.width = renderer.domElement.width;
-	video.style.height = renderer.domElement.height;
+			renderer.xr.enabled = true;
+			renderer.xr.setReferenceSpaceType('local');
+			await renderer.xr.setSession(currentSession);
 
-	renderer.domElement.style.position = "absolute";
+			arButton.textContent = "End";
 
-	document.body.appendChild(video);
-	document.body.appendChild(renderer.domElement);
+			renderer.setAnimationLoop(()=>{
+				renderer.render(scene,camera);
+			})
 
+		}
+
+		const end=async()=>{
+			currentSession.end();
+			renderer.clear();
+			renderer.setAnimationLoop(null);
+			arButton.style.display = "none";
+		}
+
+		arButton.addEventListener("click",()=>{
+			if(currentSession){
+				end();
+			}else {start();}
+		})
+	}
+	initialize();
 });
