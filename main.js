@@ -1,4 +1,4 @@
-import * as THREE from "scripts/libs/three.js-r132/build/three.module.js";
+import * as THREE from "/scripts/libs/three.js-r132/build/three.module.js";
 
 console.log("THREE", THREE);
 
