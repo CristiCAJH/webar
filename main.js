@@ -9,12 +9,12 @@ document.addEventListener("DOMContentLoaded", ()=> {
 		const arButton = document.querySelector("#ar-button");
 
 		const supported = navigator.xr && await navigator.xr.isSessionSupported("immersive-ar");
-		
-		if(!supported){
+
+		/*if(!supported){
 			arButton.textContent = "not supported";
 			arButton.disable = true;
 			return;
-		}
+		}*/
 
 		const scene =  new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera();
